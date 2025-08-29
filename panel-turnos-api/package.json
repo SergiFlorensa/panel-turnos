@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "prisma": "^6.15.0"
+  },
+  "dependencies": {
+    "@nestjs/mapped-types": "*",
+    "@prisma/client": "^6.15.0"
+  }
+}

@@ -1,21 +1,29 @@
-version: "3.9"
 services:
   db:
-    image: postgres:16.4
+    image: postgres:16
     container_name: postgres_panel_turnos
+    restart: always
     environment:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: panel_turnos
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app -d panel_turnos"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
+    ports:
+      - 5432:5432
+
+  api:
+    build:
+      context: ../../panel-turnos-api
+      dockerfile: Dockerfile
+    container_name: panel_turnos_api
+    restart: unless-stopped
+    env_file:
+      - ../../panel-turnos-api/.env
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
 
 volumes:
   pgdata:

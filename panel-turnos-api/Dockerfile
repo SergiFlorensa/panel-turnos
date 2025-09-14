@@ -18,7 +18,9 @@ ENV NODE_ENV=production
 COPY --from=deps  /app/node_modules ./node_modules
 COPY --from=build /app/dist          ./dist
 COPY --from=build /app/prisma        ./prisma
+COPY --from=build /app/start.sh      ./start.sh
+RUN chmod +x ./start.sh
 
 # el .env se monta como volumen en docker-compose, no se copia aquí
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+CMD ["./start.sh"]

@@ -17,7 +17,7 @@ services:
       - ../../panel-turnos-api/.env.docker   # contiene DATABASE_URL con host "db"
     ports: [ "3000:3000", "5555:5555" ]
     depends_on: [ db ]
-    command: sh -c "npx prisma migrate deploy && node dist/main.js"
+    command: ./start.sh
 
 volumes:
   pgdata:

@@ -15,10 +15,9 @@ services:
       context: ../../panel-turnos-api
     env_file:
       - ../../panel-turnos-api/.env.docker   # contiene DATABASE_URL con host "db"
-    volumes:                                 # monta el mismo fichero dentro
-      - ../../panel-turnos-api/.env.docker:/app/.env:ro
     ports: [ "3000:3000", "5555:5555" ]
     depends_on: [ db ]
+    command: sh -c "npx prisma migrate deploy && node dist/main.js"
 
 volumes:
   pgdata:

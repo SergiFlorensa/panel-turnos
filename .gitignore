@@ -14,9 +14,6 @@ dist
 # Docker
 infra/docker/pgdata
 
-# Prisma
-prisma/migrations
-
 # OS
 .DS_Store
 Thumbs.db

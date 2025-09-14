@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+// create-medico.dto.ts
+import { IsString, IsNotEmpty, IsOptional, IsEmail } from 'class-validator';
 
 export class CreateMedicoDto {
   @IsString()
@@ -12,4 +13,12 @@ export class CreateMedicoDto {
   @IsString()
   @IsOptional()
   telefono?: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 }

@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsDateString, IsOptional, IsEnum } from 'class-validator';
-import { EstadoTurno } from '@prisma/client';
+import * as Prisma from '@prisma/client';
 
 export class CreateTurnoDto {
   @IsString()
@@ -13,9 +13,9 @@ export class CreateTurnoDto {
   @IsDateString()
   fechaHora: string;
 
-  @IsEnum(EstadoTurno)
+  @IsEnum(Prisma.EstadoTurno)
   @IsOptional()
-  estado?: EstadoTurno;
+  estado?: Prisma.EstadoTurno;
 
   @IsString()
   @IsOptional()

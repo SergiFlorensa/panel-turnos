@@ -3,33 +3,22 @@ version: '3.8'
 services:
   db:
     image: postgres:16
-    container_name: postgres_panel_turnos
-    restart: always
     environment:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: panel_turnos
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
+    ports: [ "5432:5432" ]
+    volumes: [ pgdata:/var/lib/postgresql/data ]
 
   api:
     build:
       context: ../../panel-turnos-api
-      dockerfile: Dockerfile
-    container_name: panel_turnos_api
-    restart: unless-stopped
     env_file:
-      - ../../panel-turnos-api/.env.docker
-    ports:
-      - 3000:3000
-      - 5555:5555 # Prisma Studio
-    # Montamos el fichero .env.docker como /app/.env para reflejar cambios sin rebuild
-    volumes:
+      - ../../panel-turnos-api/.env.docker   # contiene DATABASE_URL con host "db"
+    volumes:                                 # monta el mismo fichero dentro
       - ../../panel-turnos-api/.env.docker:/app/.env:ro
-    depends_on:
-      - db
+    ports: [ "3000:3000", "5555:5555" ]
+    depends_on: [ db ]
 
 volumes:
   pgdata:

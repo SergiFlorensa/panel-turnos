@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateTurnoDto } from '../dto/create-turno.dto';
 import { UpdateTurnoDto } from '../dto/update-turno.dto';
@@ -12,12 +12,12 @@ export class TurnosService {
     const fecha = new Date(data.fechaHora);
     const hora = fecha.getHours();
 
-    // Validar horario (8–18h)
+    // Validar horario (08-18h)
     if (hora < 8 || hora >= 18) {
       throw new BadRequestException('Los turnos solo pueden asignarse entre las 08:00 y las 18:00');
     }
 
-    // Validar solapamiento: mismo médico, misma fecha/hora
+    // Validar solapamiento: mismo medico, misma fecha y hora
     const solapado = await this.prisma.turno.findFirst({
       where: {
         medicoId: data.medicoId,
@@ -26,7 +26,7 @@ export class TurnosService {
     });
 
     if (solapado) {
-      throw new BadRequestException('El médico ya tiene un turno en ese horario');
+      throw new BadRequestException('El medico ya tiene un turno en ese horario');
     }
 
     return this.prisma.turno.create({
@@ -50,7 +50,9 @@ export class TurnosService {
       where: { id },
       include: { medico: true, paciente: true },
     });
-    if (!turno) throw new NotFoundException(`Turno con id ${id} no encontrado`);
+    if (!turno) {
+      throw new NotFoundException(`Turno con id ${id} no encontrado`);
+    }
     return turno;
   }
 

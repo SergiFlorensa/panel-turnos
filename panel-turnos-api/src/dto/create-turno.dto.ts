@@ -1,5 +1,7 @@
 import { IsString, IsNotEmpty, IsDateString, IsOptional, IsEnum } from 'class-validator';
-import { Prisma, EstadoTurno } from '@prisma/client';
+import { EstadoTurno } from '@prisma/client';
+
+console.log('DEBUG EstadoTurno:', EstadoTurno); // 👈 añade esta línea
 
 export class CreateTurnoDto {
   @IsString()

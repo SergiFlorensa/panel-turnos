@@ -1,4 +1,4 @@
-import { Rol } from '@prisma/client';
+﻿import { Rol } from '@prisma/client';
 
 export class Usuario {
   id: string;
@@ -9,3 +9,5 @@ export class Usuario {
   creadoEn: Date;
   actualizadoEn: Date;
 }
+
+export type UsuarioSafe = Omit<Usuario, 'password'>;

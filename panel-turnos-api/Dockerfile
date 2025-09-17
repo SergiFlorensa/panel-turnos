@@ -1,26 +1,25 @@
-# -------- deps --------
+# Etapa 1: dependencias
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# -------- build --------
+# Etapa 2: build
 FROM deps AS build
+WORKDIR /app
 COPY . .
-RUN npm run build            # usa tsconfig.build.json
+RUN npm run build
 RUN npx prisma generate
 
-# -------- runtime --------
-FROM node:22-alpine
+# Etapa 3: runtime
+FROM node:22-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY --from=deps  /app/node_modules ./node_modules
-COPY --from=build /app/dist          ./dist
-COPY --from=build /app/prisma        ./prisma
-COPY --from=build /app/start.sh      ./start.sh
-RUN chmod +x ./start.sh
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+COPY .env.docker .env
 
-# el .env se monta como volumen en docker-compose, no se copia aquí
 EXPOSE 3000
-CMD ["./start.sh"]
+CMD ["node", "dist/main.js"]

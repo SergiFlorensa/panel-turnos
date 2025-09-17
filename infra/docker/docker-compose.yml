@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
@@ -7,17 +7,25 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: panel_turnos
-    ports: [ "5432:5432" ]
-    volumes: [ pgdata:/var/lib/postgresql/data ]
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   api:
     build:
       context: ../../panel-turnos-api
     env_file:
-      - ../../panel-turnos-api/.env.docker   # contiene DATABASE_URL con host "db"
-    ports: [ "3000:3000", "5555:5555" ]
-    depends_on: [ db ]
-    command: sh -c "npx prisma migrate deploy || npx prisma db push && node dist/main.js"
+      - ../../panel-turnos-api/.env.docker
+    ports:
+      - "3000:3000"
+      - "5555:5555"
+    depends_on:
+      - db
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             npx ts-node prisma/seed.ts &&
+             node dist/main.js"
 
 volumes:
   pgdata:

@@ -1,0 +1,36 @@
+﻿<!-- auth/login.component.html -->
+<h2>Iniciar sesion</h2>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="email">Email:</label><br />
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      placeholder="Email"
+    />
+    <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched" style="color:red">
+      Email invalido.
+    </div>
+  </div>
+
+  <div>
+    <label for="password">Contrasena:</label><br />
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      placeholder="Contrasena"
+    />
+    <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" style="color:red">
+      La contrasena es obligatoria.
+    </div>
+  </div>
+
+  <button type="submit" [disabled]="form.invalid">Entrar</button>
+
+  <p *ngIf="error" style="color:red; margin-top: 10px;">
+    {{ error }}
+  </p>
+</form>

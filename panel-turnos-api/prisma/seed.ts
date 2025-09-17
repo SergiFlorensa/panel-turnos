@@ -1,63 +1,57 @@
-import { PrismaClient } from '@prisma/client';
+﻿// prisma/seed.ts
+import { PrismaClient, Rol, EstadoTurno } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('⏳ Iniciando seed...');
+  const saltRounds = 10;
+  console.log('Starting database seed...');
 
-  // Limpieza previa (cuidado en entornos reales)
-  console.log('🧹 Limpiando tablas (turnos, medicos, pacientes, usuarios)...');
   await prisma.turno.deleteMany();
   await prisma.medico.deleteMany();
   await prisma.paciente.deleteMany();
   await prisma.usuario.deleteMany();
-  console.log('🧹 Tablas limpiadas.');
 
-  // 0) Usuario de administración simple (prueba mínima)
-  console.log('🔰 Creando usuario ADMIN de prueba...');
+  const adminPasswordHash = await bcrypt.hash('admin1234', saltRounds);
   const admin = await prisma.usuario.create({
     data: {
       email: 'admin@demo.com',
-      password: 'admin1234',
+      password: adminPasswordHash,
       nombre: 'Admin Demo',
-      rol: 'ADMIN',
+      rol: Rol.ADMIN,
     },
   });
-  console.log('🔰 Usuario ADMIN creado:', { id: admin.id, email: admin.email });
+  console.log(`Admin created: ${admin.email}`);
 
-  // 1) Crear médicos con usuarios (secuencial para mejor trazabilidad)
-  console.log('👨‍⚕️ Creando médicos...');
   const medicosData = [
-    { especialidad: 'Cardiología', nombre: 'Dr. Juan Pérez', email: 'juan.perez@demo.com' },
-    { especialidad: 'Pediatría', nombre: 'Dra. María López', email: 'maria.lopez@demo.com' },
-    { especialidad: 'Traumatología', nombre: 'Dr. Carlos Sánchez', email: 'carlos.sanchez@demo.com' },
+    { especialidad: 'Cardiologia', nombre: 'Dr. Juan Perez', email: 'juan.perez@demo.com', pass: '1234' },
+    { especialidad: 'Pediatria', nombre: 'Dra. Maria Lopez', email: 'maria.lopez@demo.com', pass: '1234' },
+    { especialidad: 'Traumatologia', nombre: 'Dr. Carlos Sanchez', email: 'carlos.sanchez@demo.com', pass: '1234' },
   ];
 
-  const medicos = [];
-  for (const m of medicosData) {
+  for (const medico of medicosData) {
+    const hash = await bcrypt.hash(medico.pass, saltRounds);
     const created = await prisma.medico.create({
       data: {
-        especialidad: m.especialidad,
+        especialidad: medico.especialidad,
         usuario: {
           create: {
-            nombre: m.nombre,
-            email: m.email,
-            password: '1234',
-            rol: 'MEDICO',
+            nombre: medico.nombre,
+            email: medico.email,
+            password: hash,
+            rol: Rol.MEDICO,
           },
         },
       },
       include: { usuario: true },
     });
-    medicos.push(created);
-    console.log(`  ✅ Médico creado: ${created.usuario.nombre} (medicoId=${created.id})`);
+    console.log(`Medico created: ${created.usuario.email}`);
   }
 
-  // 2) Crear pacientes con usuarios
-  console.log('🧑‍🤝‍🧑 Creando pacientes...');
-  const pacientes = [];
   for (let i = 0; i < 10; i++) {
-    const usuarioEmail = `paciente${i + 1}@demo.com`;
+    const email = `paciente${i + 1}@demo.com`;
+    const hash = await bcrypt.hash('1234', saltRounds);
     const created = await prisma.paciente.create({
       data: {
         dni: `1234567${i}A`,
@@ -65,53 +59,44 @@ async function main() {
         usuario: {
           create: {
             nombre: `Paciente ${i + 1}`,
-            email: usuarioEmail,
-            password: '1234',
-            rol: 'PACIENTE',
+            email,
+            password: hash,
+            rol: Rol.PACIENTE,
           },
         },
       },
       include: { usuario: true },
     });
-    pacientes.push(created);
-    console.log(`  ✅ Paciente creado: ${created.usuario.nombre} (pacienteId=${created.id})`);
+    console.log(`Paciente created: ${created.usuario.email}`);
   }
 
-  console.log(`👨‍⚕️ Médicos totales: ${medicos.length}, 🧑‍🤝‍🧑 Pacientes totales: ${pacientes.length}`);
-
-  // 3) Validar que hay suficientes para crear turnos
-  if (medicos.length < 3 || pacientes.length < 5) {
-    throw new Error('No hay suficientes médicos/pacientes para crear los turnos de ejemplo.');
-  }
-
-  // 4) Crear turnos iniciales (fechas en UTC; ajusta si necesitas otra zona)
-  console.log('📅 Creando turnos de ejemplo...');
+  const medicos = await prisma.medico.findMany();
+  const pacientes = await prisma.paciente.findMany();
   const turnosToCreate = [
-    { medicoIndex: 0, pacienteIndex: 0, iso: '2025-09-15T09:00:00Z', estado: 'PENDIENTE' },
-    { medicoIndex: 1, pacienteIndex: 1, iso: '2025-09-15T10:00:00Z', estado: 'CONFIRMADO' },
-    { medicoIndex: 2, pacienteIndex: 2, iso: '2025-09-15T11:00:00Z', estado: 'PENDIENTE' },
-    { medicoIndex: 0, pacienteIndex: 3, iso: '2025-09-16T09:00:00Z', estado: 'PENDIENTE' },
-    { medicoIndex: 1, pacienteIndex: 4, iso: '2025-09-16T10:00:00Z', estado: 'PENDIENTE' },
+    { medicoIndex: 0, pacienteIndex: 0, iso: '2025-09-15T09:00:00Z', estado: EstadoTurno.PENDIENTE },
+    { medicoIndex: 1, pacienteIndex: 1, iso: '2025-09-15T10:00:00Z', estado: EstadoTurno.CONFIRMADO },
+    { medicoIndex: 2, pacienteIndex: 2, iso: '2025-09-15T11:00:00Z', estado: EstadoTurno.PENDIENTE },
+    { medicoIndex: 0, pacienteIndex: 3, iso: '2025-09-16T09:00:00Z', estado: EstadoTurno.PENDIENTE },
+    { medicoIndex: 1, pacienteIndex: 4, iso: '2025-09-16T10:00:00Z', estado: EstadoTurno.PENDIENTE },
   ];
 
-  for (const t of turnosToCreate) {
-    const created = await prisma.turno.create({
+  for (const turno of turnosToCreate) {
+    await prisma.turno.create({
       data: {
-        medicoId: medicos[t.medicoIndex].id,
-        pacienteId: pacientes[t.pacienteIndex].id,
-        fechaHora: new Date(t.iso),
-        estado: t.estado as any, // Prisma enum string accepted
+        medicoId: medicos[turno.medicoIndex].id,
+        pacienteId: pacientes[turno.pacienteIndex].id,
+        fechaHora: new Date(turno.iso),
+        estado: turno.estado,
       },
     });
-    console.log(`  ✅ Turno creado: id=${created.id} medico=${created.medicoId} paciente=${created.pacienteId} fecha=${created.fechaHora.toISOString()}`);
   }
 
-  console.log('✅ Seed completado con éxito');
+  console.log('Seed completed.');
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Error en seed:', e);
+  .catch((error) => {
+    console.error(error);
     process.exit(1);
   })
   .finally(async () => {

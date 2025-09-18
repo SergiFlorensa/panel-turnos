@@ -38,7 +38,7 @@
         Profesional
         <select
           class="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none"
-          (change)="onMedicoChange((($event.target as HTMLSelectElement)?.value) ?? 'all')"
+          (change)="onMedicoChange(($any($event.target)?.value) ?? 'all')"
         >
           <option value="all">Todos</option>
           <option *ngFor="let medico of (medicos$ | async)" [value]="medico.id">

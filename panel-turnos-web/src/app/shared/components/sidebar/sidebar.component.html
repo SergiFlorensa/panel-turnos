@@ -1,0 +1,14 @@
+<div class="flex">
+  <aside class="w-64 h-screen bg-gray-800 text-white p-4">
+    <h2 class="text-xl font-bold mb-6">Panel</h2>
+    <nav class="space-y-2">
+      <a routerLink="/dashboard" class="block px-3 py-2 rounded hover:bg-gray-700">Inicio</a>
+      <a routerLink="/dashboard/medicos" class="block px-3 py-2 rounded hover:bg-gray-700">Médicos</a>
+      <a routerLink="/dashboard/pacientes" class="block px-3 py-2 rounded hover:bg-gray-700">Pacientes</a>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6 bg-gray-100">
+    <router-outlet></router-outlet>
+  </main>
+</div>

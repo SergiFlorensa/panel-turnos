@@ -16,17 +16,27 @@ export class AuthService {
    * Valida email/password contra la base de datos
    * Devuelve el usuario si es correcto, o lanza 401
    */
-  async validateUser(email: string, password: string): Promise<Usuario> {
-    const user = await this.prisma.usuario.findUnique({ where: { email } });
-    if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
-    }
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) {
-      throw new UnauthorizedException('Credenciales invalidas');
-    }
-    return user;
+ async validateUser(email: string, password: string): Promise<Usuario> {
+  console.log('🟡 Validando usuario con email:', email); // 👈 Log útil
+
+  const user = await this.prisma.usuario.findUnique({ where: { email } });
+
+  if (!user) {
+    console.warn('🔴 Usuario no encontrado');
+    throw new UnauthorizedException('Usuario no encontrado');
   }
+
+  const valid = await bcrypt.compare(password, user.password);
+  console.log('🔵 Contraseña válida:', valid); // 👈 Verifica esto
+
+  if (!valid) {
+    console.warn('🔴 Contraseña inválida');
+    throw new UnauthorizedException('Credenciales invalidas');
+  }
+
+  return user;
+}
+
 
   /**
    * Genera el JWT con el payload basico

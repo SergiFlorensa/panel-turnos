@@ -1,0 +1,17 @@
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+h1 {
+  @apply mb-6;
+}
+
+.bg-white {
+  @apply transition duration-200 ease-in-out;
+}
+
+.bg-white:hover {
+  @apply shadow-lg scale-[1.02];
+}

@@ -1,36 +1,38 @@
-﻿<!-- auth/login.component.html -->
-<h2>Iniciar sesion</h2>
+﻿<h2 class="text-xl font-bold mb-4">Iniciar sesión</h2>
 
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
   <div>
-    <label for="email">Email:</label><br />
+    <label for="email" class="block text-sm font-medium">Email:</label>
     <input
       id="email"
       type="email"
       formControlName="email"
       placeholder="Email"
+      class="mt-1 block w-full border rounded px-3 py-2"
     />
-    <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched" style="color:red">
-      Email invalido.
+    <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched" class="text-red-500 text-sm">
+      Email inválido.
     </div>
   </div>
 
   <div>
-    <label for="password">Contrasena:</label><br />
+    <label for="password" class="block text-sm font-medium">Contraseña:</label>
     <input
       id="password"
       type="password"
       formControlName="password"
-      placeholder="Contrasena"
+      placeholder="Contraseña"
+      class="mt-1 block w-full border rounded px-3 py-2"
     />
-    <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" style="color:red">
-      La contrasena es obligatoria.
+    <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="text-red-500 text-sm">
+      La contraseña es obligatoria.
     </div>
   </div>
 
-  <button type="submit" [disabled]="form.invalid">Entrar</button>
+  <button type="submit" [disabled]="form.invalid" class="bg-blue-600 text-white px-4 py-2 rounded">
+    Entrar
+  </button>
 
-  <p *ngIf="error" style="color:red; margin-top: 10px;">
-    {{ error }}
-  </p>
+  <p *ngIf="success" class="text-green-600 mt-2">{{ success }}</p>
+  <p *ngIf="error" class="text-red-600 mt-2">{{ error }}</p>
 </form>

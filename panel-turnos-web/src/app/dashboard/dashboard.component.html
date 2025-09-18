@@ -1,111 +1,126 @@
 <div class="space-y-6">
+  <!-- ENCABEZADO Y FILTROS ---------------------------------------------- -->
   <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
     <div>
       <h1 class="text-2xl font-bold text-gray-800">Agenda semanal</h1>
-      <p class="text-sm text-gray-500">Visualiza los turnos confirmados y pendientes por profesional.</p>
+      <p class="text-sm text-gray-500">
+        Visualiza los turnos confirmados y pendientes por profesional.
+      </p>
     </div>
 
     <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
       <div class="flex items-center gap-2">
-        <button
-          type="button"
-          class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-          (click)="previousWeek()"
-        >
+        <button type="button" class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50" (click)="previousWeek()">
           Semana anterior
         </button>
-        <button
-          type="button"
-          class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-          (click)="goToToday()"
-        >
+        <button type="button" class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50" (click)="goToToday()">
           Hoy
         </button>
-        <button
-          type="button"
-          class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-          (click)="nextWeek()"
-        >
+        <button type="button" class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50" (click)="nextWeek()">
           Semana siguiente
         </button>
       </div>
 
       <ng-container *ngIf="weekLabel$ | async as weekLabel">
-        <span class="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">{{ weekLabel }}</span>
+        <span class="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+          {{ weekLabel }}
+        </span>
       </ng-container>
 
       <label class="flex items-center gap-2 text-sm text-gray-600">
         Profesional
         <select
           class="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none"
-          (change)="onMedicoChange(($any($event.target)?.value) ?? 'all')"
+(change)="onMedicoChange(($any($event.target)).value)"
         >
           <option value="all">Todos</option>
-          <option *ngFor="let medico of (medicos$ | async) ?? []" [value]="medico.id">
-            {{ medico.usuario.nombre }} ({{ medico.especialidad }})
+          <option
+            *ngFor="let medico of (medicos$ | async) ?? []"
+            [value]="($any(medico)).id"
+          >
+            {{ ($any(medico)).usuario?.nombre }} ({{ ($any(medico)).especialidad }})
           </option>
         </select>
       </label>
     </div>
   </div>
 
+  <!-- TARJETAS DE ESTADÍSTICAS ------------------------------------------- -->
   <ng-container *ngIf="stats$ | async as stats">
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div class="rounded-lg bg-white p-4 shadow">
         <p class="text-sm text-gray-500">Turnos programados</p>
-        <p class="text-2xl font-semibold text-gray-900">{{ stats.total }}</p>
+        <p class="text-2xl font-semibold text-gray-900">
+          {{ ($any(stats)).total }}
+        </p>
       </div>
       <div class="rounded-lg bg-white p-4 shadow">
         <p class="text-sm text-gray-500">Confirmados</p>
-        <p class="text-2xl font-semibold text-emerald-600">{{ stats.confirmados }}</p>
+        <p class="text-2xl font-semibold text-emerald-600">
+          {{ ($any(stats)).confirmados }}
+        </p>
       </div>
       <div class="rounded-lg bg-white p-4 shadow">
         <p class="text-sm text-gray-500">Pendientes</p>
-        <p class="text-2xl font-semibold text-amber-500">{{ stats.pendientes }}</p>
+        <p class="text-2xl font-semibold text-amber-500">
+          {{ ($any(stats)).pendientes }}
+        </p>
       </div>
       <div class="rounded-lg bg-white p-4 shadow">
         <p class="text-sm text-gray-500">Atendidos</p>
-        <p class="text-2xl font-semibold text-blue-500">{{ stats.atendidos }}</p>
+        <p class="text-2xl font-semibold text-blue-500">
+          {{ ($any(stats)).atendidos }}
+        </p>
       </div>
     </div>
   </ng-container>
 
+  <!-- TABLA DE AGENDA ----------------------------------------------------- -->
   <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow">
     <ng-container *ngIf="weekDays$ | async as weekDays; else loading">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="w-24 px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Hora</th>
+              <th class="w-24 px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                Hora
+              </th>
               <th
-                *ngFor="let day of weekDays; trackBy: trackByDay"
+                *ngFor="let day of ($any(weekDays)); trackBy: trackByDay"
                 class="min-w-[150px] px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
               >
                 <div class="flex flex-col">
-                  <span class="text-xs text-gray-400">{{ day.weekdayLabel }}</span>
-                  <span class="text-base font-semibold text-gray-700">{{ day.dayNumber }}</span>
+                  <span class="text-xs text-gray-400">{{ ($any(day)).weekdayLabel }}</span>
+                  <span class="text-base font-semibold text-gray-700">{{ ($any(day)).dayNumber }}</span>
                 </div>
               </th>
             </tr>
           </thead>
+
           <tbody class="divide-y divide-gray-100">
             <ng-container *ngIf="agendaRows$ | async as rows; else loadingBody">
-              <tr *ngFor="let row of rows; trackBy: trackByHour" class="hover:bg-gray-50">
+              <tr
+                *ngFor="let row of ($any(rows)); trackBy: trackByHour"
+                class="hover:bg-gray-50"
+              >
                 <td class="whitespace-nowrap px-4 py-3 text-sm font-semibold text-gray-600">
-                  {{ row.hourLabel }}
+                  {{ ($any(row)).hourLabel }}
                 </td>
+
                 <td
-                  *ngFor="let cell of row.cells; trackBy: trackByDate"
+                  *ngFor="let cell of ($any(row)).cells; trackBy: trackByDate"
                   class="min-h-[80px] px-4 py-3 align-top"
                 >
-                  <ng-container *ngIf="cell.turnos.length; else emptyCell">
+                  <ng-container *ngIf="($any(cell)).turnos.length; else emptyCell">
                     <ul class="space-y-2">
                       <li
-                        *ngFor="let turno of cell.turnos"
+                        *ngFor="let turno of ($any(cell)).turnos"
                         class="rounded-lg border border-gray-100 bg-white p-3 shadow-sm transition hover:border-blue-200 hover:shadow"
                       >
                         <div class="flex items-center justify-between text-sm">
-                          <span class="font-medium text-gray-900">{{ turno.paciente.usuario.nombre }}</span>
+                          <span class="font-medium text-gray-900">
+                            {{ turno.paciente.usuario.nombre }}
+                          </span>
                           <span class="text-xs text-gray-500">
                             {{ turno.fechaHora | date: 'HH:mm' }}
                           </span>
@@ -113,23 +128,29 @@
                         <div class="mt-1 text-xs text-gray-500">
                           {{ turno.medico.usuario.nombre }} - {{ turno.medico.especialidad }}
                         </div>
+
                         <span
                           class="mt-2 inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
                           [ngClass]="{
                             'bg-emerald-100 text-emerald-700': turno.estado === 'CONFIRMADO',
                             'bg-amber-100 text-amber-700': turno.estado === 'PENDIENTE',
                             'bg-sky-100 text-sky-700': turno.estado === 'ATENDIDO',
-                            'bg-gray-200 text-gray-600': turno.estado !== 'CONFIRMADO' && turno.estado !== 'PENDIENTE' && turno.estado !== 'ATENDIDO'
+                            'bg-gray-200 text-gray-600':
+                              turno.estado !== 'CONFIRMADO' &&
+                              turno.estado !== 'PENDIENTE' &&
+                              turno.estado !== 'ATENDIDO'
                           }"
                         >
                           {{ turno.estado | titlecase }}
                         </span>
+
                         <p *ngIf="turno.notas" class="mt-2 text-xs italic text-gray-500">
                           "{{ turno.notas }}"
                         </p>
                       </li>
                     </ul>
                   </ng-container>
+
                   <ng-template #emptyCell>
                     <div class="rounded border border-dashed border-gray-200 bg-gray-50 p-3 text-center text-xs text-gray-400">
                       Libre
@@ -146,6 +167,7 @@
     <ng-template #loading>
       <div class="p-8 text-center text-sm text-gray-500">Cargando agenda...</div>
     </ng-template>
+
     <ng-template #loadingBody>
       <tr>
         <td colspan="8" class="px-4 py-6 text-center text-sm text-gray-500">
@@ -155,4 +177,3 @@
     </ng-template>
   </div>
 </div>
-

@@ -11,6 +11,12 @@ interface WeekDay {
   dayNumber: number;
 }
 
+interface MedicoResumen {
+  id: string;
+  especialidad: string;
+  usuario: { nombre: string };
+}
+
 interface AgendaCell {
   dayLabel: string;
   date: Date;
@@ -53,16 +59,17 @@ export class DashboardComponent {
 
   readonly weekLabel$: Observable<string> = this.weekDays$.pipe(
     map((days) => {
-      if (days.length === 0) {
-        return '';
-      }
+      if (days.length === 0) return '';
       const first = days[0].date;
       const last = days[days.length - 1].date;
-      return `${formatShortDate(first)} - ${formatShortDate(last)}`;
+      return `${formatShortDate(first)} – ${formatShortDate(last)}`;
     }),
+    shareReplay({ bufferSize: 1, refCount: true }),
   );
 
-  readonly medicos$ = this.medicosApi.getMedicos().pipe(shareReplay({ bufferSize: 1, refCount: true }));
+  readonly medicos$: Observable<MedicoResumen[]> = this.medicosApi
+    .getMedicos()
+    .pipe(shareReplay({ bufferSize: 1, refCount: true }));
 
   private readonly turnos$: Observable<TurnoDto[]> = combineLatest([
     this.weekStartSubject,
@@ -83,9 +90,15 @@ export class DashboardComponent {
   readonly agendaRows$: Observable<AgendaRow[]> = combineLatest([
     this.turnos$,
     this.weekDays$,
-  ]).pipe(map(([turnos, days]) => this.buildAgenda(turnos, days)));
+  ]).pipe(
+    map(([turnos, days]) => this.buildAgenda(turnos, days)),
+    shareReplay({ bufferSize: 1, refCount: true }),
+  );
 
-  readonly stats$: Observable<AgendaStats> = this.turnos$.pipe(map((turnos) => buildStats(turnos)));
+  readonly stats$: Observable<AgendaStats> = this.turnos$.pipe(
+    map((turnos) => buildStats(turnos)),
+    shareReplay({ bufferSize: 1, refCount: true }),
+  );
 
   trackByHour(_: number, row: AgendaRow): number {
     return row.hour;
@@ -96,8 +109,6 @@ export class DashboardComponent {
   }
 
   trackByDate(_: number, cell: AgendaCell): string {
-    return `${formatDateKey(cell.date)}-${cell.hour}`;
-  }(_: number, cell: AgendaCell): string {
     return `${formatDateKey(cell.date)}-${cell.hour}`;
   }
 
@@ -113,6 +124,8 @@ export class DashboardComponent {
     this.weekStartSubject.next(startOfWeek(new Date()));
   }
 
+  // En la plantilla se está pasando directamente el string:
+  // (change)="onMedicoChange(($any($event.target)?.value) ?? 'all')"
   onMedicoChange(medicoId: string): void {
     this.medicoFilterSubject.next(medicoId);
   }
@@ -129,11 +142,8 @@ export class DashboardComponent {
       const date = new Date(turno.fechaHora);
       const key = `${formatDateKey(date)}-${date.getHours()}`;
       const existing = agendaMap.get(key);
-      if (existing) {
-        existing.push(turno);
-      } else {
-        agendaMap.set(key, [turno]);
-      }
+      if (existing) existing.push(turno);
+      else agendaMap.set(key, [turno]);
     }
 
     return this.hours.map((hour) => {
@@ -152,6 +162,8 @@ export class DashboardComponent {
     });
   }
 }
+
+/* ===== utilidades ===== */
 
 function startOfWeek(date: Date): Date {
   const clone = new Date(date);
@@ -230,4 +242,3 @@ function buildStats(turnos: TurnoDto[]): AgendaStats {
 
   return stats;
 }
-

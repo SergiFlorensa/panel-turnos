@@ -1,4 +1,4 @@
 ﻿export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000', // Local Nest API base URL
+  apiUrl: 'http://localhost:3001', // Local Nest API base URL
 };

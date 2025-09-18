@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+ï»¿import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, shareReplay, switchMap } from 'rxjs';
 import { MedicosApiService } from './medicos-api.service';
@@ -8,6 +8,7 @@ import { TurnosApiService, TurnoDto } from './turnos-api.service';
 interface AgendaCell {
   dayLabel: string;
   date: Date;
+  hour: number;
   turnos: TurnoDto[];
 }
 
@@ -32,7 +33,10 @@ interface AgendaStats {
   styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent {
-  private readonly hours = Array.from({ length: 10 }, (_, index) => 8 + index); // 08-17
+  private readonly turnosApi = inject(TurnosApiService);
+  private readonly medicosApi = inject(MedicosApiService);
+
+  private readonly hours = Array.from({ length: 10 }, (_, index) => 8 + index); // 08-17 bloque horario
   private readonly weekStartSubject = new BehaviorSubject<Date>(startOfWeek(new Date()));
   private readonly medicoFilterSubject = new BehaviorSubject<string>('all');
 
@@ -45,7 +49,7 @@ export class DashboardComponent {
     map((days) => {
       const first = days[0].date;
       const last = days[days.length - 1].date;
-      return `${formatShortDate(first)} — ${formatShortDate(last)}`;
+      return `${formatShortDate(first)} - ${formatShortDate(last)}`;
     }),
   );
 
@@ -73,17 +77,12 @@ export class DashboardComponent {
 
   readonly stats$ = this.turnos$.pipe(map((turnos) => buildStats(turnos)));
 
-  constructor(
-    private readonly turnosApi: TurnosApiService,
-    private readonly medicosApi: MedicosApiService,
-  ) {}
-
   trackByHour(_: number, row: AgendaRow): number {
     return row.hour;
   }
 
   trackByDate(_: number, cell: AgendaCell): string {
-    return `${formatDateKey(cell.date)}-${cell.hourLabel}`;
+    return `${formatDateKey(cell.date)}-${cell.hour}`;
   }
 
   previousWeek(): void {
@@ -128,6 +127,7 @@ export class DashboardComponent {
         return {
           dayLabel: formatShortWeekday(day),
           date: day,
+          hour,
           turnos: agendaMap.get(key) ?? [],
         };
       });
@@ -140,7 +140,7 @@ export class DashboardComponent {
 function startOfWeek(date: Date): Date {
   const clone = new Date(date);
   const day = clone.getDay();
-  const diff = (day === 0 ? -6 : 1) - day; // ISO week starts Monday
+  const diff = (day === 0 ? -6 : 1) - day; // arranque ISO en lunes
   clone.setDate(clone.getDate() + diff);
   clone.setHours(0, 0, 0, 0);
   return clone;

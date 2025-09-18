@@ -12,7 +12,7 @@
           class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
           (click)="previousWeek()"
         >
-          ← Semana anterior
+          Semana anterior
         </button>
         <button
           type="button"
@@ -26,7 +26,7 @@
           class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
           (click)="nextWeek()"
         >
-          Semana siguiente →
+          Semana siguiente
         </button>
       </div>
 
@@ -38,7 +38,7 @@
         Profesional
         <select
           class="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none"
-          (change)="onMedicoChange($event.target.value)"
+          (change)="onMedicoChange((($event.target as HTMLSelectElement)?.value) ?? 'all')"
         >
           <option value="all">Todos</option>
           <option *ngFor="let medico of (medicos$ | async)" [value]="medico.id">
@@ -111,7 +111,7 @@
                           </span>
                         </div>
                         <div class="mt-1 text-xs text-gray-500">
-                          {{ turno.medico.usuario.nombre }} · {{ turno.medico.especialidad }}
+                          {{ turno.medico.usuario.nombre }} - {{ turno.medico.especialidad }}
                         </div>
                         <span
                           class="mt-2 inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"

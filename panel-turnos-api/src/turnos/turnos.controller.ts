@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/common';
 import { TurnosService } from './turnos.service';
 import { CreateTurnoDto } from '../dto/create-turno.dto';
 import { UpdateTurnoDto } from '../dto/update-turno.dto';
@@ -14,8 +14,12 @@ export class TurnosController {
   }
 
   @Get()
-  findAll(): Promise<Turno[]> {
-    return this.turnosService.findAll();
+  findAll(
+    @Query('start') start?: string,
+    @Query('end') end?: string,
+    @Query('medicoId') medicoId?: string,
+  ): Promise<Turno[]> {
+    return this.turnosService.findAll({ start, end, medicoId });
   }
 
   @Get(':id')

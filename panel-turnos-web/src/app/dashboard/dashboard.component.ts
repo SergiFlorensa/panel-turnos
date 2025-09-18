@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, Observable, combineLatest, map, shareReplay, switchMap } from 'rxjs';
@@ -6,8 +6,9 @@ import { MedicosApiService } from './medicos-api.service';
 import { TurnosApiService, TurnoDto } from './turnos-api.service';
 
 interface WeekDay {
-  label: string;
   date: Date;
+  weekdayLabel: string;
+  dayNumber: number;
 }
 
 interface AgendaCell {
@@ -46,7 +47,7 @@ export class DashboardComponent {
   private readonly medicoFilterSubject = new BehaviorSubject<string>('all');
 
   readonly weekDays$: Observable<WeekDay[]> = this.weekStartSubject.pipe(
-    map<WeekDay[]>((weekStart) => buildWeekDays(weekStart)),
+    map((weekStart): WeekDay[] => buildWeekDays(weekStart)),
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
@@ -82,15 +83,21 @@ export class DashboardComponent {
   readonly agendaRows$: Observable<AgendaRow[]> = combineLatest([
     this.turnos$,
     this.weekDays$,
-  ]).pipe(map<AgendaRow[]>(([turnos, days]) => this.buildAgenda(turnos, days.map((day) => day.date))));
+  ]).pipe(map(([turnos, days]) => this.buildAgenda(turnos, days)));
 
-  readonly stats$: Observable<AgendaStats> = this.turnos$.pipe(map<AgendaStats>((turnos) => buildStats(turnos)));
+  readonly stats$: Observable<AgendaStats> = this.turnos$.pipe(map((turnos) => buildStats(turnos)));
 
   trackByHour(_: number, row: AgendaRow): number {
     return row.hour;
   }
 
+  trackByDay(_: number, day: WeekDay): string {
+    return formatDateKey(day.date);
+  }
+
   trackByDate(_: number, cell: AgendaCell): string {
+    return `${formatDateKey(cell.date)}-${cell.hour}`;
+  }(_: number, cell: AgendaCell): string {
     return `${formatDateKey(cell.date)}-${cell.hour}`;
   }
 
@@ -115,7 +122,7 @@ export class DashboardComponent {
     this.weekStartSubject.next(addDays(current, days));
   }
 
-  private buildAgenda(turnos: TurnoDto[], days: Date[]): AgendaRow[] {
+  private buildAgenda(turnos: TurnoDto[], days: WeekDay[]): AgendaRow[] {
     const agendaMap = new Map<string, TurnoDto[]>();
 
     for (const turno of turnos) {
@@ -132,10 +139,10 @@ export class DashboardComponent {
     return this.hours.map((hour) => {
       const hourLabel = `${hour.toString().padStart(2, '0')}:00`;
       const cells: AgendaCell[] = days.map((day) => {
-        const key = `${formatDateKey(day)}-${hour}`;
+        const key = `${formatDateKey(day.date)}-${hour}`;
         return {
-          dayLabel: formatShortWeekday(day),
-          date: day,
+          dayLabel: day.weekdayLabel,
+          date: day.date,
           hour,
           turnos: agendaMap.get(key) ?? [],
         };
@@ -192,8 +199,9 @@ function buildWeekDays(weekStart: Date): WeekDay[] {
   return Array.from({ length: 7 }, (_, index) => {
     const date = addDays(weekStart, index);
     return {
-      label: `${formatShortWeekday(date)} ${date.getDate()}`,
       date,
+      weekdayLabel: formatShortWeekday(date),
+      dayNumber: date.getDate(),
     };
   });
 }
@@ -222,3 +230,4 @@ function buildStats(turnos: TurnoDto[]): AgendaStats {
 
   return stats;
 }
+

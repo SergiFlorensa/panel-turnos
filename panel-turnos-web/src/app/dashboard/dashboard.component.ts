@@ -1,9 +1,14 @@
 ﻿import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map, shareReplay, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, map, shareReplay, switchMap } from 'rxjs';
 import { MedicosApiService } from './medicos-api.service';
 import { TurnosApiService, TurnoDto } from './turnos-api.service';
+
+interface WeekDay {
+  label: string;
+  date: Date;
+}
 
 interface AgendaCell {
   dayLabel: string;
@@ -36,17 +41,20 @@ export class DashboardComponent {
   private readonly turnosApi = inject(TurnosApiService);
   private readonly medicosApi = inject(MedicosApiService);
 
-  private readonly hours = Array.from({ length: 10 }, (_, index) => 8 + index); // 08-17 bloque horario
+  private readonly hours = Array.from({ length: 10 }, (_, index) => 8 + index); // bloques 08-17
   private readonly weekStartSubject = new BehaviorSubject<Date>(startOfWeek(new Date()));
   private readonly medicoFilterSubject = new BehaviorSubject<string>('all');
 
-  readonly weekDays$ = this.weekStartSubject.pipe(
-    map((weekStart) => buildWeekDays(weekStart)),
+  readonly weekDays$: Observable<WeekDay[]> = this.weekStartSubject.pipe(
+    map<WeekDay[]>((weekStart) => buildWeekDays(weekStart)),
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
-  readonly weekLabel$ = this.weekDays$.pipe(
+  readonly weekLabel$: Observable<string> = this.weekDays$.pipe(
     map((days) => {
+      if (days.length === 0) {
+        return '';
+      }
       const first = days[0].date;
       const last = days[days.length - 1].date;
       return `${formatShortDate(first)} - ${formatShortDate(last)}`;
@@ -55,7 +63,7 @@ export class DashboardComponent {
 
   readonly medicos$ = this.medicosApi.getMedicos().pipe(shareReplay({ bufferSize: 1, refCount: true }));
 
-  private readonly turnos$ = combineLatest([
+  private readonly turnos$: Observable<TurnoDto[]> = combineLatest([
     this.weekStartSubject,
     this.medicoFilterSubject,
   ]).pipe(
@@ -71,11 +79,12 @@ export class DashboardComponent {
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
-  readonly agendaRows$ = combineLatest([this.turnos$, this.weekDays$]).pipe(
-    map(([turnos, days]) => this.buildAgenda(turnos, days.map((day) => day.date))),
-  );
+  readonly agendaRows$: Observable<AgendaRow[]> = combineLatest([
+    this.turnos$,
+    this.weekDays$,
+  ]).pipe(map<AgendaRow[]>(([turnos, days]) => this.buildAgenda(turnos, days.map((day) => day.date))));
 
-  readonly stats$ = this.turnos$.pipe(map((turnos) => buildStats(turnos)));
+  readonly stats$: Observable<AgendaStats> = this.turnos$.pipe(map<AgendaStats>((turnos) => buildStats(turnos)));
 
   trackByHour(_: number, row: AgendaRow): number {
     return row.hour;
@@ -179,7 +188,7 @@ function formatShortWeekday(date: Date): string {
   return date.toLocaleDateString('es-ES', { weekday: 'short' });
 }
 
-function buildWeekDays(weekStart: Date): { label: string; date: Date }[] {
+function buildWeekDays(weekStart: Date): WeekDay[] {
   return Array.from({ length: 7 }, (_, index) => {
     const date = addDays(weekStart, index);
     return {
